@@ -217,10 +217,17 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 .hero-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;animation:herofade 21s infinite}
 .hero-bg img:nth-child(2){animation-delay:7s}.hero-bg img:nth-child(3){animation-delay:14s}
 @keyframes herofade{0%{opacity:0;transform:scale(1.04)}5%{opacity:1}33%{opacity:1}38%{opacity:0;transform:scale(1.14)}100%{opacity:0}}
-.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,253,247,.93) 0%,rgba(255,253,247,.86) 50%,rgba(255,253,247,.72) 100%),linear-gradient(rgba(255,253,247,0) 60%,#FFFDF7 100%)}
-@media (max-width:880px){.hero-bg::after{background:rgba(255,253,247,.86)}}
+.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,253,247,.84) 0%,rgba(255,253,247,.70) 50%,rgba(255,253,247,.48) 100%),linear-gradient(rgba(255,253,247,0) 60%,#FFFDF7 100%)}
+@media (max-width:880px){.hero-bg::after{background:rgba(255,253,247,.76)}}
 .hero .wrap,.train-zone,.hero .wave{position:relative;z-index:1}
 .cloud{z-index:1}
+
+/* Photos en fond des sections */
+.pbg{position:relative;isolation:isolate}
+.pbg::before{content:"";position:absolute;inset:0;z-index:-2;background:var(--img) center/cover no-repeat}
+.pbg::after{content:"";position:absolute;inset:0;z-index:-1;background:var(--veil)}
+.pbg .sec-head h2,.pbg .collations{text-shadow:0 1px 12px rgba(255,253,247,.9)}
+.engage.pbg .eng-txt h2,.engage.pbg .eng-txt p{text-shadow:0 1px 10px rgba(20,50,10,.5)}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
@@ -357,23 +364,12 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
       </g>
     </svg>
   </div>
-  <svg class="wave" viewBox="0 0 1440 56" preserveAspectRatio="none" aria-hidden="true"><path d="M0 28C240 0 480 56 720 28S1200 0 1440 28V56H0Z" fill="#FFFFFF"/><path d="M0 42C260 18 520 62 760 38S1220 20 1440 42" fill="none" stroke="#F6C343" stroke-width="4"/></svg>
+  <svg class="wave" viewBox="0 0 1440 56" preserveAspectRatio="none" aria-hidden="true"><path d="M0 28C240 0 480 56 720 28S1200 0 1440 28V56H0Z" fill="#F2F9EA"/><path d="M0 42C260 18 520 62 760 38S1220 20 1440 42" fill="none" stroke="#F6C343" stroke-width="4"/></svg>
 </section>
 
-<!-- ===== Ils se régalent (illustrations, à remplacer par des photos) ===== -->
-<section class="sec regal" id="regal">
-  <div class="wrap">
-    <div class="sec-head reveal"><p class="hand">Les assiettes reviennent vides !</p><h2>Ils se régalent</h2></div>
-    <div class="kids">
-      <figure class="kidfig reveal d1"><img class="kid k1" src="photos/enfant-1.jpg" alt="Bébé aux grands yeux, la bouche toute barbouillée de purée de bleuets" width="240" height="240" loading="lazy"><figcaption>« Encore des bleuets ! »</figcaption></figure>
-      <figure class="kidfig reveal d2"><img class="kid k2" src="photos/enfant-2.jpg" alt="Garçon tout sourire qui mange des pommes de terre" width="240" height="240" loading="lazy"><figcaption>« Miam, les patates ! »</figcaption></figure>
-      <figure class="kidfig reveal d3"><img class="kid k3" src="photos/enfant-3.jpg" alt="Petite fille qui croque une tranche de pastèque" width="240" height="240" loading="lazy"><figcaption>« Miam, la pastèque ! »</figcaption></figure>
-    </div>
-  </div>
-</section>
 
 <!-- ===== Offre ===== -->
-<section class="sec offre" id="offre">
+<section class="sec pbg offre" id="offre" style="--img:url(photos/fond-2.jpg);--veil:rgba(242,249,234,.80)">
   <div class="wrap">
     <div class="sec-head reveal"><p class="hand">Préparé avec amour chaque matin</p><h2>Ce que nous offrons</h2></div>
     <div class="cards">
@@ -388,7 +384,7 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 </section>
 
 <!-- ===== Comment ça marche ===== -->
-<section class="sec" id="fonctionnement">
+<section class="sec pbg" id="fonctionnement" style="--img:url(photos/fond-3.jpg);--veil:rgba(255,253,247,.80)">
   <div class="wrap">
     <div class="sec-head reveal"><p class="hand">Tout le monde à bord !</p><h2>Comment ça marche</h2></div>
     <div class="steps">
@@ -405,7 +401,7 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 </section>
 
 <!-- ===== Menu ===== -->
-<section class="sec menu" id="menu">
+<section class="sec pbg menu" id="menu" style="--img:url(photos/fond-1.jpg);--veil:rgba(255,246,230,.80)">
   <div class="wrap">
     <div class="sec-head reveal"><p class="hand">Miam !</p><h2>Exemple de menu de la semaine</h2></div>
     <div class="slider reveal" id="slider" tabindex="0" aria-label="Menu de la semaine, faites glisser pour voir les jours">
@@ -424,7 +420,7 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 </section>
 
 <!-- ===== Photos ===== -->
-<section class="sec" id="cuisine">
+<section class="sec pbg" id="cuisine" style="--img:url(photos/fond-2.jpg);--veil:rgba(255,253,247,.82)">
   <div class="wrap">
     <div class="sec-head reveal"><p class="hand">Tout juste sorti du four</p><h2>Dans notre cuisine</h2></div>
     <div class="photos">
@@ -436,7 +432,7 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 </section>
 
 <!-- ===== Charte des valeurs ===== -->
-<section class="sec valeurs" id="valeurs">
+<section class="sec pbg valeurs" id="valeurs" style="--img:url(photos/fond-3.jpg);--veil:rgba(242,249,234,.80)">
   <div class="wrap">
     <div class="sec-head reveal"><p class="hand">Ce qui nous guide chaque jour</p><h2>Notre charte des valeurs</h2></div>
     <div class="vals">
@@ -451,7 +447,7 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 </section>
 
 <!-- ===== Engagement ===== -->
-<section class="sec engage">
+<section class="sec pbg engage" style="--img:url(photos/fond-1.jpg);--veil:rgba(47,98,20,.84)">
   <div class="wrap eng-grid">
     <div class="eng-txt reveal">
       <h2>Notre engagement</h2>
@@ -466,7 +462,7 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 </section>
 
 <!-- ===== Contact ===== -->
-<section class="sec" id="contact">
+<section class="sec pbg" id="contact" style="--img:url(photos/fond-2.jpg);--veil:rgba(255,253,247,.78)">
   <div class="wrap">
     <div class="contact-card reveal">
       <svg class="heart" style="top:24px;left:28px" width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8-5.5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.5-8 11-8 11z" fill="none" stroke="#EE7A12" stroke-width="2.2"/></svg>

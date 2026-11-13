@@ -13,9 +13,13 @@
 *{box-sizing:border-box}
 body{margin:0;background:#FFFDF7;color:#24401A;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:18px;line-height:1.65}
 .wrap{max-width:760px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
-header{background:#fff;border-bottom:3px solid #F6C343;padding-block:16px}
+header{position:relative;isolation:isolate;background:#fff;border-bottom:3px solid #F6C343;padding-block:16px}
+.banner{position:relative;isolation:isolate;padding-block:56px 40px}
+.banner::before{content:"";position:absolute;inset:0;z-index:-2;background:url(photos/fond-1.jpg) center 40%/cover no-repeat}
+.banner::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(rgba(255,253,247,.74),#FFFDF7)}
+.banner h1{text-shadow:0 1px 12px rgba(255,253,247,.9)}
 header a{display:inline-flex;align-items:center;gap:10px;color:#1F4D0F;text-decoration:none;font-weight:700;font-size:22px}
-main{padding-block:48px 72px}
+main{padding-block:8px 72px}
 h1{font-size:clamp(30px,5vw,42px);line-height:1.15;color:#1F4D0F;margin:0 0 8px}
 h2{font-size:22px;color:#1F4D0F;margin:36px 0 8px}
 p,li{color:#3A5530}
@@ -28,9 +32,9 @@ footer{background:#F6C343;color:#1F4D0F;padding-block:24px;font-size:16px}
 </head>
 <body>
 <header><div class="wrap"><a href="index.html"><svg width="40" height="40" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#FFF6E6" stroke="#4E8F1F" stroke-width="4"/><text x="32" y="42" text-anchor="middle" font-family="Fredoka, Arial, sans-serif" font-weight="700" font-size="28"><tspan fill="#4E8F1F">S</tspan><tspan fill="#EE7A12">C</tspan></text></svg>← Retour au site</a></div></header>
+<section class="banner"><div class="wrap"><h1>Politique de confidentialité</h1>
+<p class="date">Dernière mise à jour : 13 novembre 2026</p></div></section>
 <main class="wrap">
-<h1>Politique de confidentialité</h1>
-<p class="date">Dernière mise à jour : 13 novembre 2026</p>
 
 <p>SC Nutrition prépare et livre des repas aux garderies et aux CPE. Cette page explique, en termes simples, quels renseignements personnels nous recueillons, pourquoi, et comment nous les protégeons, conformément à la Loi sur la protection des renseignements personnels dans le secteur privé du Québec.</p>
 
