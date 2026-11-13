@@ -233,7 +233,8 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 .partner{background:#fff;border-top:2px dashed #E8DDBF;padding-block:26px}
 .partner-in{display:flex;align-items:center;justify-content:center;gap:14px;text-align:center;flex-wrap:wrap}
 .partner p{font-size:19px;color:var(--green-dd)}
-.partner b{color:var(--orange-d);font-weight:700;letter-spacing:.3px}
+.partner-link{color:var(--orange-d);font-weight:700;letter-spacing:.3px;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;display:inline-block;transition:transform .2s cubic-bezier(.34,1.56,.64,1),color .2s}
+.partner-link:hover{color:var(--green-d);transform:translateY(-2px) scale(1.05)}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
@@ -491,7 +492,7 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 <section class="partner reveal" aria-label="Partenaire de livraison">
   <div class="wrap partner-in">
     <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#3F7A1C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2ZM13 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
-    <p>Livraison assurée par notre partenaire <b>Ship MTC</b></p>
+    <p>Livraison assurée par notre partenaire <a class="partner-link" href="https://shipmtc.ca" target="_blank" rel="noopener">Ship MTC</a></p>
   </div>
 </section>
 
