@@ -212,11 +212,22 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 .val h3{font-size:21px;color:var(--green-dd)}
 .val p{color:var(--muted)}
 
+/* Photos en fond de l'en-tête */
+.hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:#FFFDF7}
+.hero-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;animation:herofade 21s infinite}
+.hero-bg img:nth-child(2){animation-delay:7s}.hero-bg img:nth-child(3){animation-delay:14s}
+@keyframes herofade{0%{opacity:0;transform:scale(1.04)}5%{opacity:1}33%{opacity:1}38%{opacity:0;transform:scale(1.14)}100%{opacity:0}}
+.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,253,247,.93) 0%,rgba(255,253,247,.86) 50%,rgba(255,253,247,.72) 100%),linear-gradient(rgba(255,253,247,0) 60%,#FFFDF7 100%)}
+@media (max-width:880px){.hero-bg::after{background:rgba(255,253,247,.86)}}
+.hero .wrap,.train-zone,.hero .wave{position:relative;z-index:1}
+.cloud{z-index:1}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .js .reveal{opacity:1;transform:none}
   .lg-swoosh,.lg-arc{stroke-dashoffset:0}
   .puff{opacity:0}
+  .hero-bg img:first-child{opacity:1}
 }
 </style>
 </head>
@@ -248,6 +259,11 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 <main>
 <!-- ===== En-tête ===== -->
 <section class="hero" id="accueil">
+  <div class="hero-bg" aria-hidden="true">
+    <img src="photos/fond-1.jpg" alt="" style="object-position:50% 40%">
+    <img src="photos/fond-2.jpg" alt="" style="object-position:50% 35%">
+    <img src="photos/fond-3.jpg" alt="" style="object-position:60% 50%">
+  </div>
   <svg class="cloud c1" viewBox="0 0 150 70" aria-hidden="true"><path d="M30 60h90a24 24 0 0 0 0-48 30 30 0 0 0-56-6A22 22 0 0 0 30 60z" fill="#E9F3DC"/></svg>
   <svg class="cloud c2" viewBox="0 0 150 70" aria-hidden="true"><path d="M30 60h90a24 24 0 0 0 0-48 30 30 0 0 0-56-6A22 22 0 0 0 30 60z" fill="#FFF0DC"/></svg>
   <div class="wrap hero-grid">
