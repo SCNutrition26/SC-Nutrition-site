@@ -191,6 +191,27 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
 .foot a{color:var(--green-dd)}
 .foot-l{display:flex;align-items:center;gap:14px}
 
+/* Enfants illustrés */
+.regal{background:#fff;padding-top:clamp(48px,7vw,80px)}
+.kids{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;justify-items:center}
+.kidfig{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px}
+.kid{width:min(240px,100%);height:auto;border-radius:50%;box-shadow:0 14px 30px rgba(63,122,28,.16);animation:floaty 3.4s ease-in-out infinite alternate}
+.kid.k2{animation-delay:.6s}.kid.k3{animation-delay:1.2s}
+@keyframes floaty{to{transform:translateY(-12px) rotate(2deg)}}
+.kid .spoon{transform-box:fill-box;transform-origin:20% 90%;animation:feed 1.6s ease-in-out infinite alternate}
+@keyframes feed{to{transform:rotate(-18deg)}}
+.kidfig figcaption{font-family:var(--hand);font-size:24px;color:var(--orange-d)}
+/* Valeurs */
+.valeurs{background:linear-gradient(#FFFDF7,#F2F9EA)}
+.vals{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.val{background:#fff;border-radius:26px;padding:26px;display:flex;flex-direction:column;gap:10px;border-top:7px solid var(--green);box-shadow:0 6px 18px rgba(63,122,28,.08);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.val.o{border-top-color:var(--orange)}
+.val:hover{transform:translateY(-6px)}
+.vico{width:54px;height:54px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center}
+.val.o .vico{background:var(--orange)}
+.val h3{font-size:21px;color:var(--green-dd)}
+.val p{color:var(--muted)}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .js .reveal{opacity:1;transform:none}
@@ -217,6 +238,7 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
       <a class="lnk" href="#offre">Notre offre</a>
       <a class="lnk" href="#fonctionnement">Comment ça marche</a>
       <a class="lnk" href="#menu">Menu</a>
+      <a class="lnk" href="#valeurs">Nos valeurs</a>
       <a class="lnk" href="#contact">Contact</a>
       <a class="btn btn-orange" href="https://tally.so/r/BEdK91">Dégustation gratuite</a>
     </nav>
@@ -319,7 +341,64 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
       </g>
     </svg>
   </div>
-  <svg class="wave" viewBox="0 0 1440 56" preserveAspectRatio="none" aria-hidden="true"><path d="M0 28C240 0 480 56 720 28S1200 0 1440 28V56H0Z" fill="#F2F9EA"/><path d="M0 42C260 18 520 62 760 38S1220 20 1440 42" fill="none" stroke="#F6C343" stroke-width="4"/></svg>
+  <svg class="wave" viewBox="0 0 1440 56" preserveAspectRatio="none" aria-hidden="true"><path d="M0 28C240 0 480 56 720 28S1200 0 1440 28V56H0Z" fill="#FFFFFF"/><path d="M0 42C260 18 520 62 760 38S1220 20 1440 42" fill="none" stroke="#F6C343" stroke-width="4"/></svg>
+</section>
+
+<!-- ===== Ils se régalent (illustrations, à remplacer par des photos) ===== -->
+<section class="sec regal" id="regal">
+  <div class="wrap">
+    <div class="sec-head reveal"><p class="hand">Les assiettes reviennent vides !</p><h2>Ils se régalent</h2></div>
+    <div class="kids">
+      <figure class="kidfig reveal d1"><svg class="kid k1" viewBox="0 0 200 200" role="img" aria-label="Enfant souriant, le visage taché de sauce, qui mange avec une cuillère">
+<circle cx="100" cy="100" r="100" fill="#FFE3C7"/>
+<path d="M36 200C42 150 158 150 164 200Z" fill="#4E8F1F"/>
+<path d="M70 158Q100 148 130 158L124 200H76Z" fill="#fff"/><circle cx="90" cy="176" r="3" fill="#4E8F1F"/><circle cx="108" cy="184" r="3" fill="#4E8F1F"/><circle cx="100" cy="168" r="3" fill="#4E8F1F"/>
+<circle cx="52" cy="102" r="11" fill="#F5CBA7"/><circle cx="148" cy="102" r="11" fill="#F5CBA7"/>
+<circle cx="100" cy="100" r="50" fill="#F5CBA7"/>
+<path d="M54 92C54 58 80 44 100 44C126 44 148 60 146 92C136 72 118 64 100 66C84 66 64 74 54 92Z" fill="#5A3A22"/><path d="M98 46c4-12 14-14 18-10c-8 2-12 6-12 12z" fill="#5A3A22"/>
+<path d="M76 94q9-10 18 0M106 94q9-10 18 0" stroke="#3A2A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<circle cx="72" cy="110" r="8" fill="#F28B82" opacity=".55"/><circle cx="128" cy="110" r="8" fill="#F28B82" opacity=".55"/>
+<path d="M80 112Q100 144 120 112Z" fill="#7A2E2E"/><path d="M90 128q10 8 20 0q-10-6-20 0z" fill="#F2777A"/><path d="M84 113H116" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+<circle cx="66" cy="122" r="6" fill="#E0592A" opacity=".9"/><circle cx="74" cy="128" r="3.5" fill="#E0592A" opacity=".9"/>
+<path d="M95 79c5-3 10 0 8 5c-3 4-9 2-8-5z" fill="#E0592A" opacity=".9"/>
+<path d="M118 130c6 0 9 5 6 9c-4 2-8-1-6-9z" fill="#E0592A" opacity=".9"/>
+<path d="M112 118c6 4 10 10 9 18" stroke="#F6C343" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<g class="spoon"><circle cx="156" cy="150" r="12" fill="#F5CBA7"/><path d="M158 146L176 104" stroke="#B9C2C9" stroke-width="7" stroke-linecap="round"/><ellipse cx="178" cy="98" rx="11" ry="8" fill="#DDE3E8" transform="rotate(-65 178 98)"/><circle cx="178" cy="96" r="6" fill="#E0592A"/></g>
+</svg><figcaption>« Encore des spaghettis ! »</figcaption></figure>
+      <figure class="kidfig reveal d2"><svg class="kid k2" viewBox="0 0 200 200" role="img" aria-label="Enfant souriant, le visage taché de sauce, qui mange avec une cuillère">
+<circle cx="100" cy="100" r="100" fill="#DDF0C8"/>
+<path d="M36 200C42 150 158 150 164 200Z" fill="#EE7A12"/>
+<path d="M70 158Q100 148 130 158L124 200H76Z" fill="#fff"/><circle cx="90" cy="176" r="3" fill="#EE7A12"/><circle cx="108" cy="184" r="3" fill="#EE7A12"/><circle cx="100" cy="168" r="3" fill="#EE7A12"/>
+<circle cx="52" cy="102" r="11" fill="#C68B59"/><circle cx="148" cy="102" r="11" fill="#C68B59"/>
+<circle cx="100" cy="100" r="50" fill="#C68B59"/>
+<path d="M52 96C48 60 74 42 100 42S152 60 148 96C140 78 124 70 100 70S60 78 52 96Z" fill="#1E1E1E"/><circle cx="58" cy="70" r="14" fill="#1E1E1E"/><circle cx="142" cy="70" r="14" fill="#1E1E1E"/>
+<path d="M76 94q9-10 18 0M106 94q9-10 18 0" stroke="#3A2A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<circle cx="72" cy="110" r="8" fill="#F28B82" opacity=".55"/><circle cx="128" cy="110" r="8" fill="#F28B82" opacity=".55"/>
+<path d="M80 112Q100 144 120 112Z" fill="#7A2E2E"/><path d="M90 128q10 8 20 0q-10-6-20 0z" fill="#F2777A"/><path d="M84 113H116" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+<circle cx="66" cy="122" r="6" fill="#D9442B" opacity=".9"/><circle cx="74" cy="128" r="3.5" fill="#D9442B" opacity=".9"/>
+<path d="M95 79c5-3 10 0 8 5c-3 4-9 2-8-5z" fill="#D9442B" opacity=".9"/>
+<path d="M118 130c6 0 9 5 6 9c-4 2-8-1-6-9z" fill="#D9442B" opacity=".9"/>
+<path d="M112 118c6 4 10 10 9 18" stroke="#F6C343" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<g class="spoon"><circle cx="156" cy="150" r="12" fill="#C68B59"/><path d="M158 146L176 104" stroke="#B9C2C9" stroke-width="7" stroke-linecap="round"/><ellipse cx="178" cy="98" rx="11" ry="8" fill="#DDE3E8" transform="rotate(-65 178 98)"/><circle cx="178" cy="96" r="6" fill="#D9442B"/></g>
+</svg><figcaption>« Miam, le chili ! »</figcaption></figure>
+      <figure class="kidfig reveal d3"><svg class="kid k3" viewBox="0 0 200 200" role="img" aria-label="Enfant souriant, le visage taché de sauce, qui mange avec une cuillère">
+<circle cx="100" cy="100" r="100" fill="#FFF1BF"/>
+<path d="M36 200C42 150 158 150 164 200Z" fill="#F6C343"/>
+<path d="M70 158Q100 148 130 158L124 200H76Z" fill="#fff"/><circle cx="90" cy="176" r="3" fill="#F6C343"/><circle cx="108" cy="184" r="3" fill="#F6C343"/><circle cx="100" cy="168" r="3" fill="#F6C343"/>
+<circle cx="52" cy="102" r="11" fill="#8D5524"/><circle cx="148" cy="102" r="11" fill="#8D5524"/>
+<circle cx="100" cy="100" r="50" fill="#8D5524"/>
+<g fill="#2B1A10"><circle cx="70" cy="62" r="13"/><circle cx="88" cy="52" r="13"/><circle cx="108" cy="50" r="13"/><circle cx="128" cy="56" r="13"/><circle cx="142" cy="72" r="12"/><circle cx="58" cy="78" r="12"/></g>
+<path d="M76 94q9-10 18 0M106 94q9-10 18 0" stroke="#3A2A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<circle cx="72" cy="110" r="8" fill="#F28B82" opacity=".55"/><circle cx="128" cy="110" r="8" fill="#F28B82" opacity=".55"/>
+<path d="M80 112Q100 144 120 112Z" fill="#7A2E2E"/><path d="M90 128q10 8 20 0q-10-6-20 0z" fill="#F2777A"/><path d="M84 113H116" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+<circle cx="66" cy="122" r="6" fill="#F28A1E" opacity=".9"/><circle cx="74" cy="128" r="3.5" fill="#F28A1E" opacity=".9"/>
+<path d="M95 79c5-3 10 0 8 5c-3 4-9 2-8-5z" fill="#F28A1E" opacity=".9"/>
+<path d="M118 130c6 0 9 5 6 9c-4 2-8-1-6-9z" fill="#F28A1E" opacity=".9"/>
+<path d="M112 118c6 4 10 10 9 18" stroke="#F6C343" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<g class="spoon"><circle cx="156" cy="150" r="12" fill="#8D5524"/><path d="M158 146L176 104" stroke="#B9C2C9" stroke-width="7" stroke-linecap="round"/><ellipse cx="178" cy="98" rx="11" ry="8" fill="#DDE3E8" transform="rotate(-65 178 98)"/><circle cx="178" cy="96" r="6" fill="#F28A1E"/></g>
+</svg><figcaption>« C'est mon préféré ! »</figcaption></figure>
+    </div>
+  </div>
 </section>
 
 <!-- ===== Offre ===== -->
@@ -381,6 +460,21 @@ footer{background:var(--yellow);color:var(--green-dd);padding-block:30px calc(30
       <div class="ph reveal d1"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>Photo d'un dîner<br>(à venir)</div>
       <div class="ph reveal d2"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>Photo des collations<br>(à venir)</div>
       <div class="ph reveal d3"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>Photo des bacs de livraison<br>(à venir)</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Charte des valeurs ===== -->
+<section class="sec valeurs" id="valeurs">
+  <div class="wrap">
+    <div class="sec-head reveal"><p class="hand">Ce qui nous guide chaque jour</p><h2>Notre charte des valeurs</h2></div>
+    <div class="vals">
+      <article class="val reveal d1"><div class="vico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6Z"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></div><h3>La sécurité d'abord</h3><p>Allergies, températures, hygiène : chaque repas est préparé et livré avec rigueur, parce que la santé des enfants passe avant tout.</p></article>
+      <article class="val o reveal d2"><div class="vico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-8-5.5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.5-8 11-8 11z"/></svg></div><h3>Fait maison, avec amour</h3><p>Nous cuisinons chaque jour, comme à la maison, avec des ingrédients simples et des recettes que les enfants aiment.</p></article>
+      <article class="val reveal d3"><div class="vico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 8a3 3 0 1 0 0.01 0"/><path d="M16 8a3 3 0 1 0 0.01 0"/><path d="M3 20c0-3 2.5-5 5-5s5 2 5 5"/><path d="M11 20c0-3 2.5-5 5-5s5 2 5 5"/></svg></div><h3>Chaque enfant compte</h3><p>Poupons, allergies, habitudes alimentaires et cultures : chaque enfant reçoit un repas pensé pour lui.</p></article>
+      <article class="val o reveal d1"><div class="vico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0.01 0"/><path d="M12 7v5l3 2"/></svg></div><h3>Fiabilité</h3><p>Livré à l'heure, chaque jour. Vous pouvez compter sur nous, et vos éducatrices aussi.</p></article>
+      <article class="val reveal d2"><div class="vico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><path d="M12 9a3 3 0 1 0 0.01 0"/></svg></div><h3>Transparence</h3><p>Menus, liste des allergènes, températures notées : vous savez toujours ce que mangent vos enfants.</p></article>
+      <article class="val o reveal d3"><div class="vico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0.01 0"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></div><h3>Le plaisir de bien manger</h3><p>Des couleurs, des saveurs et des sourires : on apprend à aimer les bons aliments en se régalant.</p></article>
     </div>
   </div>
 </section>
