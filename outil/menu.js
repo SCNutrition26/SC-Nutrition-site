@@ -21,6 +21,8 @@ window.GAS=true;
 
 
 
+
+
 /* QRCode for JavaScript, Copyright (c) 2009 Kazuhiko Arase, MIT license (http://www.d-project.com/) */
 (function(){var F={"./QR8bitByte":function(require,module){var QRMode = require('./QRMode');
 
@@ -1334,7 +1336,7 @@ const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+Stri
 const parse=s=>{const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c,12)};
 const monday=d=>{const x=new Date(d);x.setHours(12,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
 const S={view:"jour",date:iso(new Date()),wk:null,rec:null,q:"",f:"tous",cw:null,
-  cfg:{enfants:50,poupons:0,marge:5,debut:iso(monday(new Date()))},checks:{},custom:{},cycles:{},ready:false,linked:false,sheet:null,sync:"",syncCode:"",mc:0,redo:false,pmsg:"",draft:null,del:false,db:null,canWrite:true};
+  cfg:{enfants:50,poupons:0,marge:5,debut:iso(monday(new Date()))},checks:{},custom:{},cycles:{},ready:false,linked:false,sheet:null,sync:"",syncCode:"",mc:0,redo:false,pmsg:"",draft:null,del:false,db:null,canWrite:true,liv:{},sent:{}};
 const ALL=["Blé","Lait","Œufs","Poisson","Soya","Sésame","Moutarde"];
 function applyCustom(){
   Object.keys(R).forEach(k=>{if(R[k].custom)delete R[k]});
@@ -1345,9 +1347,9 @@ function applyCustom(){
       st:(Array.isArray(c.st)?c.st:[]).map(String),p:PL[c.p]?c.p:"x",custom:true}});
 }
 function setStatus(t){$("#status").textContent=t}
-try{const l=JSON.parse(localStorage.getItem("scmenu")||"null");if(l){Object.assign(S.cfg,l.cfg||{});S.checks=l.checks||{};S.custom=l.custom||{};S.cycles=l.cycles||{};S.linked=!!l.linked;S.sheet=l.sheet||null}}catch(e){}
+try{const l=JSON.parse(localStorage.getItem("scmenu")||"null");if(l){Object.assign(S.cfg,l.cfg||{});S.checks=l.checks||{};S.custom=l.custom||{};S.cycles=l.cycles||{};S.linked=!!l.linked;S.sheet=l.sheet||null;S.liv=l.liv||{};S.sent=l.sent||{}}}catch(e){}
 applyCustom();
-function local(){try{localStorage.setItem("scmenu",JSON.stringify({cfg:S.cfg,checks:S.checks,custom:S.custom,cycles:S.cycles,linked:S.linked,sheet:S.sheet}))}catch(e){}}
+function local(){try{localStorage.setItem("scmenu",JSON.stringify({cfg:S.cfg,checks:S.checks,custom:S.custom,cycles:S.cycles,linked:S.linked,sheet:S.sheet,liv:S.liv,sent:S.sent}))}catch(e){}}
 
 /* enregistrement : un seul envoi à la fois par document */
 const queues={};
@@ -1573,7 +1575,7 @@ function mealCard(id,cls){
 }
 /* lien et code QR du formulaire des livreurs, garderie déjà remplie */
 const FORM="https://tally.so/r/6Djz0A";
-function gLink(g){return FORM+"?garderie="+encodeURIComponent(g)}
+function gLink(g){const n=(S.liv[g]||"").trim();return FORM+"?garderie="+encodeURIComponent(g)+(n?"&livreur="+encodeURIComponent(n):"")}
 function qrSvg(text){
   try{const q=new QRCode(-1,0);q.addData(text);q.make();const n=q.getModuleCount();let d="";
     for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+="M"+c+" "+r+"h1v1h-1z";
@@ -1582,9 +1584,13 @@ function qrSvg(text){
 function dayNames(){
   if(!S.sheet)return [];const G=S.sheet.gard||{},n=[...new Set(S.sheet.liv.filter(x=>x.date===S.date).map(x=>x.garderie))];
   return n.sort((x,y)=>((G[x]||{}).heure||"99").localeCompare((G[y]||{}).heure||"99")||x.localeCompare(y,"fr"))}
-function linksText(){
-  const G=S.sheet.gard||{},date=parse(S.date).toLocaleDateString("fr-CA",{weekday:"long",day:"numeric",month:"long"});
-  return "Livraisons SC Nutrition, "+date+"\nÀ chaque garderie, touche son lien juste après avoir déposé les bacs :\n\n"+dayNames().map(g=>g+((G[g]||{}).heure?" ("+G[g].heure+")":"")+"\n"+gLink(g)).join("\n\n")}
+const jourTxt=()=>parse(S.date).toLocaleDateString("fr-CA",{weekday:"long",day:"numeric",month:"long"});
+const gLine=g=>{const h=((S.sheet.gard||{})[g]||{}).heure;return g+(h?" ("+h+")":"")};
+/* message pour un livreur (ou pour tous si drv est vide) : une garderie nommée au-dessus de chaque lien */
+function linksText(drv){
+  const gs=dayNames().filter(g=>drv===undefined||(S.liv[g]||"").trim()===drv);
+  return (drv?"Bonjour "+drv+", tes livraisons SC Nutrition du "+jourTxt():"Livraisons SC Nutrition, "+jourTxt())+".\nÀ chaque garderie, touche son lien juste après avoir déposé les bacs :\n\n"+gs.map(g=>gLine(g)+"\n"+gLink(g)).join("\n\n")}
+function oneText(g){return gLine(g)+", "+jourTxt()+".\nTouche ce lien juste après avoir déposé les bacs :\n"+gLink(g)}
 /* étiquettes à imprimer : bacs, poupons, portions à part */
 function labels(){
   if(!S.sheet)return null;
@@ -1680,10 +1686,17 @@ function vGard(){
   const tot=names.reduce((n,g)=>n+merged[g].tot,0);
   return head+sheetBar()+`<p class="note" style="margin:0 0 12px">${names.length} garderie${names.length>1?"s":""}, ${tot} enfants. Vous cuisinez une seule fois pour tout le monde (onglet Aujourd'hui), puis vous remplissez un bac par garderie avec les nombres ci-dessous.</p>
   <div class="card sheet"><div class="t"><b>Étiquettes du jour</b><p class="note" style="margin-top:2px">Une étiquette par bac, une pour les poupons de chaque garderie et une par portion à part, au prénom de l'enfant. Format 4 po × 2 po, 10 par feuille Lettre (compatible Avery 5163), ou papier ordinaire à découper.</p>${S.lmsg?`<p class="${/prêtes/.test(S.lmsg)?"ok":"warn"}" style="margin-top:4px" role="status">${esc(S.lmsg)}</p>`:""}</div><button class="btn main" data-labels>${window.GAS?"Imprimer les étiquettes":"Télécharger les étiquettes"}</button></div>
-  <div class="card" style="margin-bottom:16px;background:#F7FBF2"><div class="row sp"><div style="flex:1 1 260px;min-width:0"><b>Liens pour le livreur</b><p class="note" style="margin-top:2px">L'étiquette de chaque bac porte un code QR : le livreur le scanne et le formulaire s'ouvre avec la garderie déjà remplie. Si l'imprimante ne fonctionne pas, copiez les liens et collez-les dans un texto ou un courriel au livreur.</p></div><button class="btn main" data-copyall>Copier tous les liens</button></div>
-    <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">${names.map((g,i)=>`<div class="row sp" style="gap:8px"><span style="min-width:0"><b>${esc(g)}</b>${(G[g]||{}).heure?` <span class="pill y">${esc(G[g].heure)}</span>`:""}</span><button class="btn" data-copylink="${i}">Copier le lien</button></div>`).join("")}</div>
+  ${(()=>{const sent=S.sent["J"+S.date]||[],drvs=[...new Set(names.map(g=>(S.liv[g]||"").trim()).filter(Boolean))].sort((x,y)=>x.localeCompare(y,"fr"));
+  return `<div class="card" style="margin-bottom:16px;background:#F7FBF2"><b>Liens pour les livreurs</b>
+    <p class="note" style="margin-top:2px">Chaque garderie a son propre lien : il ouvre le formulaire avec le nom de cette garderie déjà rempli. Le code QR de l'étiquette du bac mène au même lien. Si l'imprimante ne fonctionne pas, copiez le message et collez-le dans un texto au livreur : le nom de la garderie est écrit au-dessus de chaque lien.</p>
+    <div class="lk">${names.map((g,i)=>`<div class="lkr ${sent.includes(g)?"done":""}"><span class="lkn"><b>${esc(g)}</b>${(G[g]||{}).heure?` <span class="pill y">${esc(G[g].heure)}</span>`:""}</span>
+      <input type="text" data-liv="${i}" value="${esc(S.liv[g]||"")}" placeholder="Nom du livreur" aria-label="Livreur pour ${esc(g)}" maxlength="40">
+      <button class="btn" data-copylink="${i}">Copier son message</button>
+      <label class="lks"><input type="checkbox" data-sent="${i}" ${sent.includes(g)?"checked":""}> Envoyé</label></div>`).join("")}</div>
+    <div class="row" style="margin-top:12px;gap:8px">${drvs.map(d=>`<button class="btn main" data-copydrv="${esc(d)}">Copier ${names.filter(g=>(S.liv[g]||"").trim()===d).length>1?"les liens":"le lien"} de ${esc(d)}</button>`).join("")}${names.length>1?`<button class="btn" data-copyall>Copier toutes les garderies</button>`:""}</div>
+    ${drvs.length?"":`<p class="note" style="margin-top:8px">Écrivez le nom du livreur à côté de chaque garderie : un bouton par livreur apparaîtra, avec seulement ses garderies, et son nom sera déjà rempli dans le formulaire. Le nom est retenu pour les prochains jours.</p>`}
     ${S.cmsg?`<p class="ok" style="margin-top:8px" role="status">${esc(S.cmsg)}</p>`:""}
-    ${S.linktxt?`<p class="warn" style="margin-top:8px">La copie automatique ne fonctionne pas ici. Sélectionnez le texte ci-dessous et copiez-le.</p><textarea readonly rows="6" style="width:100%;font:inherit;font-size:14px;margin-top:6px;padding:8px;border-radius:10px;border:1px solid var(--green)">${esc(S.linktxt)}</textarea>`:""}</div>
+    ${S.linktxt?`<p class="warn" style="margin-top:8px">La copie automatique ne fonctionne pas ici. Sélectionnez le texte ci-dessous et copiez-le.</p><textarea readonly rows="6" style="width:100%;font:inherit;font-size:14px;margin-top:6px;padding:8px;border-radius:10px;border:1px solid var(--green)">${esc(S.linktxt)}</textarea>`:""}</div>`})()}
   <div class="grid g2">${cards}</div>`;
 }
 function vJour(){
@@ -1799,7 +1812,7 @@ function go(v){S.view=v;render();window.scrollTo(0,0)}
 
 /* ================= ÉVÉNEMENTS ================= */
 document.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-v],[data-rec],[data-back],[data-shift],[data-today],[data-go],[data-wk],[data-cw],[data-f],[data-copy],[data-clear],[data-new],[data-edit],[data-delrec],[data-adding],[data-deling],[data-saverec],[data-cancel],[data-mc],[data-redo],[data-place],[data-placetoday],[data-sync],[data-usecount],[data-labels],[data-copyall],[data-copylink]");
+  const t=e.target.closest("[data-v],[data-rec],[data-back],[data-shift],[data-today],[data-go],[data-wk],[data-cw],[data-f],[data-copy],[data-clear],[data-new],[data-edit],[data-delrec],[data-adding],[data-deling],[data-saverec],[data-cancel],[data-mc],[data-redo],[data-place],[data-placetoday],[data-sync],[data-usecount],[data-labels],[data-copyall],[data-copylink],[data-copydrv]");
   if(!t)return;
   if(!("delrec" in t.dataset))S.del=false;
   if(!("redo" in t.dataset))S.redo=false;
@@ -1815,10 +1828,12 @@ document.addEventListener("click",async e=>{
     return render()}
   if(!("labels" in t.dataset))S.lmsg="";
   S.cmsg="";S.linktxt="";
-  if("copyall" in t.dataset||t.dataset.copylink!==undefined){
-    const one=t.dataset.copylink!==undefined,g=one?dayNames()[+t.dataset.copylink]:"",txt=one?gLink(g):linksText();
-    try{await navigator.clipboard.writeText(txt);S.cmsg=one?"Lien de « "+g+" » copié : collez-le dans un texto au livreur.":"Liens copiés : collez-les dans un texto ou un courriel au livreur."}
-    catch(err){S.linktxt=txt}
+  if("copyall" in t.dataset||t.dataset.copylink!==undefined||t.dataset.copydrv!==undefined){
+    let txt,msg;
+    if(t.dataset.copylink!==undefined){const g=dayNames()[+t.dataset.copylink];txt=oneText(g);msg="Message de « "+g+" » copié : collez-le dans un texto"+((S.liv[g]||"").trim()?" à "+S.liv[g].trim():" au livreur")+", puis cochez Envoyé."}
+    else if(t.dataset.copydrv!==undefined){txt=linksText(t.dataset.copydrv);msg="Message de "+t.dataset.copydrv+" copié, avec seulement ses garderies : collez-le dans un texto, puis cochez Envoyé."}
+    else{txt=linksText();msg="Message copié avec toutes les garderies du jour."}
+    try{await navigator.clipboard.writeText(txt);S.cmsg=msg}catch(err){S.linktxt=txt}
     return render()}
   if("sync" in t.dataset)return sync();
   if(t.dataset.mc){S.mc=+t.dataset.mc;S.wk=null;return render()}
@@ -1872,6 +1887,10 @@ document.addEventListener("change",e=>{
     const k="A"+(nowA()+(S.cw||0)),a=new Set(S.checks[k]||[]);
     t.checked?a.add(t.dataset.ck):a.delete(t.dataset.ck);S.checks[k]=[...a];save("courses/"+k,{checked:S.checks[k]});render();
   }
+  if(t.dataset.liv!==undefined){const g=dayNames()[+t.dataset.liv],v=t.value.trim().replace(/\s+/g," ");if(v)S.liv[g]=v;else delete S.liv[g];
+    local();save("config/livreurs",{list:Object.keys(S.liv).map(k=>({g:k,n:S.liv[k]}))});render()}
+  if(t.dataset.sent!==undefined){const g=dayNames()[+t.dataset.sent],k="J"+S.date,a=new Set(S.sent[k]||[]);t.checked?a.add(g):a.delete(g);S.sent[k]=[...a];
+    local();save("envois/"+k,{sent:S.sent[k]});render()}
   if(t.dataset.cfg){S.cfg[t.dataset.cfg]=Math.max(0,parseInt(t.value,10)||0);save("config/menu",S.cfg);render()}
   if(t.id==="debut"&&t.value){S.cfg.debut=iso(monday(parse(t.value)));S.wk=null;save("config/menu",S.cfg);render()}
 });
@@ -1905,5 +1924,7 @@ if(S.linked||window.GAS)sync();
   db.collection("recettes").onSnapshot(s=>{S.custom={};s.docs.forEach(d=>{S.custom[d.id]=d.data()});applyCustom();local();if(!S.draft&&S.view!=="jour")render()},()=>{});
   db.collection("cycles").onSnapshot(s=>{s.docs.forEach(d=>{const x=d.data().slots;if(Array.isArray(x)&&x.length===60)S.cycles[d.id]=x.map(String)});
     const first=!S.ready;S.ready=true;local();const a=document.activeElement;if(first||!(S.draft||(a&&a.matches("input[type=number],input[type=search],select"))))render()},()=>{});
+  db.doc("config/livreurs").onSnapshot(s=>{if(s.exists){S.liv={};(s.data().list||[]).forEach(x=>{if(x&&x.g&&x.n)S.liv[String(x.g)]=String(x.n)});local();const a=document.activeElement;if(S.view==="gard"&&!(a&&a.matches("input,textarea")))render()}},()=>{});
+  db.collection("envois").onSnapshot(s=>{s.docs.forEach(d=>{S.sent[d.id]=(d.data().sent||[]).map(String)});local();const a=document.activeElement;if(S.view==="gard"&&!(a&&a.matches("input,textarea")))render()},()=>{});
   db.collection("courses").onSnapshot(s=>{s.docs.forEach(d=>{S.checks[d.id]=(d.data().checked)||[]});local();if(S.view==="courses")render()},()=>{});
 })();
