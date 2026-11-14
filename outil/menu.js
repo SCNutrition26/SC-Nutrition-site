@@ -16,8 +16,9 @@ window.GAS=true;
   var caps={db:db,mcp:mcp,user:{can:function(){return Promise.resolve(true)}}};
   window.claude={use:function(n){return Promise.resolve(caps[n]||null)}};
   document.title="Menu SC Nutrition";
-  var app=document.getElementById("app");if(app)app.outerHTML="<header>\n  <div class=\"wrap\">\n    <div class=\"top\">\n      <div class=\"brand\"><span class=\"s\">S</span><span class=\"c\">C</span><span class=\"n\">Nutrition</span><small>le menu</small></div>\n      <div class=\"count\">\n        <label>Enfants <input id=\"nEnf\" type=\"number\" min=\"0\" max=\"2000\" inputmode=\"numeric\"></label>\n        <label class=\"o\">Poupons <input id=\"nPou\" type=\"number\" min=\"0\" max=\"500\" inputmode=\"numeric\"></label>\n        <label>Marge % <input id=\"nMar\" type=\"number\" min=\"0\" max=\"30\" inputmode=\"numeric\"></label>\n      </div>\n    </div>\n    <nav role=\"tablist\" aria-label=\"Sections\">\n      <button class=\"tab\" role=\"tab\" data-v=\"jour\">Aujourd'hui</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"gard\">Par garderie</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"menu\">Menu 4 semaines</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"recettes\">Recettes</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"courses\">Courses</button>\n    </nav>\n    <div id=\"status\" aria-live=\"polite\"></div>\n  </div>\n</header>\n<main class=\"wrap\" id=\"view\"></main>";
+  var app=document.getElementById("app");if(app)app.outerHTML="<header>\n  <div class=\"wrap\">\n    <div class=\"top\">\n      <div class=\"brand\"><span class=\"s\">S</span><span class=\"c\">C</span><span class=\"n\">Nutrition</span><small>le menu</small></div>\n      <div class=\"count\">\n        <span class=\"hc\" id=\"hcount\"></span>\n        <label>Marge % <input id=\"nMar\" type=\"number\" min=\"0\" max=\"30\" inputmode=\"numeric\"></label>\n      </div>\n    </div>\n    <nav role=\"tablist\" aria-label=\"Sections\">\n      <button class=\"tab\" role=\"tab\" data-v=\"jour\">Aujourd'hui</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"gard\">Par garderie</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"menu\">Menu 4 semaines</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"recettes\">Recettes</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"courses\">Courses</button>\n    </nav>\n    <div id=\"status\" aria-live=\"polite\"></div>\n  </div>\n</header>\n<main class=\"wrap\" id=\"view\"></main>";
 })();
+
 
 
 /* QRCode for JavaScript, Copyright (c) 2009 Kazuhiko Arase, MIT license (http://www.d-project.com/) */
@@ -1363,7 +1364,14 @@ function save(path,data){
 }
 
 /* ================= CALCULS ================= */
-const factor=()=>(Math.max(0,+S.cfg.enfants||0)+Math.max(0,+S.cfg.poupons||0)*0.5)*(1+Math.max(0,+S.cfg.marge||0)/100);
+/* nombre d'enfants : celui de la feuille pour le jour affiché, sinon le nombre habituel */
+function counts(date){
+  const liv=S.sheet?S.sheet.liv.filter(x=>x.date===date):[];
+  if(liv.length){const tot=liv.reduce((n,x)=>n+x.total,0),pou=liv.reduce((n,x)=>n+Math.min(x.pou,x.total),0);return {enf:tot-pou,pou,jour:true}}
+  return {enf:Math.max(0,+S.cfg.enfants||0),pou:Math.max(0,+S.cfg.poupons||0),jour:false}}
+const marge=()=>1+Math.max(0,+S.cfg.marge||0)/100;
+const factor=()=>{const c=counts(S.date);return (c.enf+c.pou*0.5)*marge()};
+const factorHab=()=>(Math.max(0,+S.cfg.enfants||0)+Math.max(0,+S.cfg.poupons||0)*0.5)*marge();
 function num(x,dec){return (Math.round(x*Math.pow(10,dec))/Math.pow(10,dec)).toString().replace(".",",")}
 function fmt(q,u,shop){
   if(u==="g"||u==="ml"){
@@ -1410,7 +1418,7 @@ function shopping(A){
   const m=new Map();
   menuOf(cyc(A))[wk(A)].forEach(day=>day.forEach(id=>R[id].ing.forEach(([n,q,u,r])=>{
     const k=n;const e=m.get(k)||{n,q:0,u,r};e.q+=q;m.set(k,e)})));
-  const f=factor();const by={};
+  const f=factorHab();const by={};
   [...m.values()].forEach(e=>{const r=e.q===0?"Z":e.r;(by[r]=by[r]||[]).push({...e,tot:e.q*f})});
   Object.values(by).forEach(a=>a.sort((x,y)=>x.n.localeCompare(y.n,"fr")));
   return by;
@@ -1474,7 +1482,7 @@ async function sync(){
     const liv=l.filter(r=>r&&r[0]&&r[1]).map(r=>({date:String(r[0]).trim().slice(0,10),garderie:String(r[1]).trim(),total:Math.max(0,parseInt(r[2],10)||0),pou:Math.max(0,parseInt(r[3],10)||0)}));
     S.sheet={kids,liv,gard,at:new Date().toISOString()};S.linked=true;S.sync="ok";S.syncCode="";
   }catch(e){S.sync="err";S.syncCode=(e&&e.code)||""}
-  local();const a=document.activeElement;if((S.view==="jour"||S.view==="gard")&&!(a&&a.matches("input[type=number]")))render();
+  local();const a=document.activeElement;if(!S.draft&&!(a&&a.matches("input,textarea,select")))render();
 }
 function sheetBar(){
   const btn=l=>`<button class="btn" data-sync ${S.sync==="load"?"disabled":""}>${S.sync==="load"?"Lecture en cours…":l}</button>`;
@@ -1486,11 +1494,11 @@ function sheetBar(){
   if(!S.sheet)return `<div class="card sheet"><div class="t"><b>Relier à votre feuille Cuisine du jour</b><p class="note" style="margin-top:2px">Pour afficher ici les enfants allergiques, les poupons et le nombre d'enfants du jour, lus dans votre feuille Google.</p></div>${btn("Relier ma feuille Google")}</div>`;
   const liv=S.sheet.liv.filter(x=>x.date===S.date),tot=liv.reduce((n,x)=>n+x.total,0),pou=liv.reduce((n,x)=>n+x.pou,0);
   const at=new Date(S.sheet.at).toLocaleTimeString("fr-CA",{hour:"2-digit",minute:"2-digit"});
-  const same=liv.length&&+S.cfg.enfants===tot-pou&&+S.cfg.poupons===pou;
   return `<div class="card sheet"><div class="t"><b>Feuille Cuisine du jour</b>
-    <p style="margin-top:2px">${liv.length?`${liv.length} garderie${liv.length>1?"s":""} à livrer : <b>${tot} enfants</b>, dont <b>${pou} poupon${pou>1?"s":""}</b>.`:"Aucune livraison saisie pour ce jour dans la feuille."}</p>
+    <p style="margin-top:2px">${liv.length?`${liv.length} garderie${liv.length>1?"s":""} à livrer : <b>${tot} enfants</b>, dont <b>${pou} poupon${pou>1?"s":""}</b>.`:`Aucune livraison saisie pour ce jour dans la feuille. Les quantités sont calculées pour votre nombre habituel (${+S.cfg.enfants||0} enfants, ${+S.cfg.poupons||0} poupon${+S.cfg.poupons>1?"s":""}), à régler dans l'onglet Courses.`}</p>
+    ${liv.length?`<p class="note" style="margin-top:2px">Les quantités à préparer suivent ce nombre. Pour le changer, modifiez l'onglet Livraisons de la feuille, puis touchez Actualiser.</p>`:""}
     <p class="note" style="margin-top:2px">Lu à ${at}.</p></div>
-    <div class="row">${liv.length&&!same?`<button class="btn main" data-usecount="${tot-pou},${pou}">Utiliser ces nombres</button>`:""}${btn("Actualiser")}</div></div>`;
+    <div class="row">${btn("Actualiser")}</div></div>`;
 }
 const LAB=["Collation du matin","Dîner","Collation de l'après-midi"];
 /* ce que mange un enfant particulier ce jour-là ; plain = simple purée sans autre changement */
@@ -1774,6 +1782,8 @@ function vCourses(){
     const c=ck.includes(e.n);total++;if(c)done++;
     return `<label class="it ${c?"done":""}"><input type="checkbox" data-ck="${esc(e.n)}" ${c?"checked":""}><span>${esc(e.n)}</span><b>${r==="Z"?"":fmt(e.tot,e.u,true)}</b></label>`}).join("")}</div>`).join("");
   return `<p class="hand">Pour ${+S.cfg.enfants||0} enfants${+S.cfg.poupons?` et ${+S.cfg.poupons} poupons`:""}, marge de ${+S.cfg.marge||0} %</p><h2 class="h2">Liste de courses</h2>
+  <div class="card sheet"><div class="t"><b>Nombre habituel pour la semaine</b><p class="note" style="margin-top:2px">Sert à calculer cette liste de courses, et les quantités des jours où aucune livraison n'est encore saisie dans la feuille.</p></div>
+    <div class="count"><label>Enfants <input data-cfg="enfants" type="number" min="0" max="2000" inputmode="numeric" value="${+S.cfg.enfants||0}"></label><label class="o">Poupons <input data-cfg="poupons" type="number" min="0" max="500" inputmode="numeric" value="${+S.cfg.poupons||0}"></label></div></div>
   <div class="wk">${["Cette semaine","Semaine prochaine","Dans 2 semaines","Dans 3 semaines"].map((l,i)=>`<button data-cw="${i}" aria-pressed="${i===off}">${l}</button>`).join("")}</div>
   <div class="row sp"><div class="chips"><span class="pill">Semaine du ${esc(lun.toLocaleDateString("fr-CA",{day:"numeric",month:"long"}))}</span><span class="pill y">${done} sur ${total} achetés</span></div><div class="row"><button class="btn" data-copy>Copier la liste</button><button class="btn" data-clear>Tout décocher</button></div></div>
   ${secs}
@@ -1781,6 +1791,8 @@ function vCourses(){
 }
 function render(){
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===S.view));
+  const hc=counts(S.view==="jour"||S.view==="gard"?S.date:iso(new Date())),he=$("#hcount");
+  if(he)he.textContent=hc.jour?`${S.view==="jour"||S.view==="gard"?"Jour affiché":"Aujourd'hui"} : ${hc.enf+hc.pou} enfants, dont ${hc.pou} poupon${hc.pou>1?"s":""}`:`Nombre habituel : ${hc.enf} enfants, ${hc.pou} poupon${hc.pou>1?"s":""}`;
   $("#view").innerHTML={jour:vJour,gard:vGard,menu:vMenu,recettes:vRecettes,courses:vCourses}[S.view]();
 }
 function go(v){S.view=v;render();window.scrollTo(0,0)}
@@ -1809,7 +1821,6 @@ document.addEventListener("click",async e=>{
     catch(err){S.linktxt=txt}
     return render()}
   if("sync" in t.dataset)return sync();
-  if(t.dataset.usecount){const [e2,p2]=t.dataset.usecount.split(",").map(Number);S.cfg.enfants=e2;S.cfg.poupons=p2;save("config/menu",S.cfg);syncInputs();setStatus("Nombres du jour appliqués");return render()}
   if(t.dataset.mc){S.mc=+t.dataset.mc;S.wk=null;return render()}
   if("redo" in t.dataset){
     if(!S.redo){S.redo=true;return render()}
@@ -1861,6 +1872,7 @@ document.addEventListener("change",e=>{
     const k="A"+(nowA()+(S.cw||0)),a=new Set(S.checks[k]||[]);
     t.checked?a.add(t.dataset.ck):a.delete(t.dataset.ck);S.checks[k]=[...a];save("courses/"+k,{checked:S.checks[k]});render();
   }
+  if(t.dataset.cfg){S.cfg[t.dataset.cfg]=Math.max(0,parseInt(t.value,10)||0);save("config/menu",S.cfg);render()}
   if(t.id==="debut"&&t.value){S.cfg.debut=iso(monday(parse(t.value)));S.wk=null;save("config/menu",S.cfg);render()}
 });
 document.addEventListener("input",e=>{
@@ -1872,11 +1884,11 @@ document.addEventListener("input",e=>{
     return}
   if(t.id==="q"){S.q=t.value;const p=t.selectionStart;render();const n=$("#q");n.focus();try{n.setSelectionRange(p,p)}catch(x){}}
 });
-[["nEnf","enfants"],["nPou","poupons"],["nMar","marge"]].forEach(([id,k])=>{
+[["nMar","marge"]].forEach(([id,k])=>{
   const el=$("#"+id);el.value=S.cfg[k];
   el.addEventListener("input",()=>{S.cfg[k]=Math.max(0,parseInt(el.value,10)||0);save("config/menu",S.cfg);render()});
 });
-function syncInputs(){[["nEnf","enfants"],["nPou","poupons"],["nMar","marge"]].forEach(([id,k])=>{const el=$("#"+id);if(document.activeElement!==el)el.value=S.cfg[k]})}
+function syncInputs(){[["nMar","marge"]].forEach(([id,k])=>{const el=$("#"+id);if(document.activeElement!==el)el.value=S.cfg[k]})}
 
 render();
 if(S.linked||window.GAS)sync();

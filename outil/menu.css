@@ -22,6 +22,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:#ff
 .count{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
 .count label{display:flex;align-items:center;gap:6px;background:var(--green-l);border-radius:999px;padding:4px 6px 4px 12px;font-weight:500}
 .count label.o{background:var(--orange-l)}
+.count .hc{background:var(--green-l);border-radius:999px;padding:9px 14px;font-weight:600}
 .count input{width:62px;height:34px;border:2px solid #fff;border-radius:999px;text-align:center;background:#fff;font-weight:600}
 .count input:focus{outline:3px solid var(--orange)}
 nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
