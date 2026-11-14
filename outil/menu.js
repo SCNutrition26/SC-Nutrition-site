@@ -24,6 +24,7 @@ window.GAS=true;
 
 
 
+
 /* QRCode for JavaScript, Copyright (c) 2009 Kazuhiko Arase, MIT license (http://www.d-project.com/) */
 (function(){var F={"./QR8bitByte":function(require,module){var QRMode = require('./QRMode');
 
@@ -1339,7 +1340,7 @@ const monday=d=>{const x=new Date(d);x.setHours(12,0,0,0);x.setDate(x.getDate()-
 const S={view:"jour",date:iso(new Date()),wk:null,rec:null,q:"",f:"tous",cw:null,
   cfg:{enfants:50,poupons:0,marge:5,debut:iso(monday(new Date()))},checks:{},custom:{},cycles:{},ready:false,linked:false,sheet:null,sync:"",syncCode:"",mc:0,redo:false,pmsg:"",draft:null,del:false,db:null,canWrite:true,livd:{},noms:[],sent:{}};
 /* livreur de chaque garderie pour le jour affiché (change d'un jour à l'autre) */
-const LV=()=>S.livd["J"+S.date]||(S.livd["J"+S.date]={});
+const LV=()=>{const m={};if(S.sheet)S.sheet.liv.forEach(x=>{if(x.date===S.date&&x.livreur&&!m[x.garderie])m[x.garderie]=x.livreur});return m};
 const ALL=["Blé","Lait","Œufs","Poisson","Soya","Sésame","Moutarde"];
 function applyCustom(){
   Object.keys(R).forEach(k=>{if(R[k].custom)delete R[k]});
@@ -1480,11 +1481,11 @@ async function sync(){
     const get=async range=>{const r=await mcp.callTool("Google Sheets","get_values",{spreadsheetId:SHEET,range});
       let p=r&&r.payload!==undefined?r.payload:r;if(typeof p==="string"){try{p=JSON.parse(p)}catch(e){p={}}}
       return (p&&Array.isArray(p.values))?p.values:[]};
-    const k=await get("Enfants!A2:H1000"),l=await get("Livraisons!A2:D1000"),gd=await get("Garderies!A2:F200");
+    const k=await get("Enfants!A2:H1000"),l=await get("Livraisons!A2:E1000"),gd=await get("Garderies!A2:F200");
     const gard={};gd.forEach(r=>{if(r&&r[0])gard[String(r[0]).trim()]={heure:String(r[5]||"").trim(),adresse:String(r[1]||"").trim()}});
     const kids=k.filter(r=>r&&String(r[0]||"").trim()&&["TRUE","VRAI"].includes(String(r[6]).toUpperCase())).map(r=>({prenom:String(r[0]).trim(),garderie:String(r[1]||"").trim(),groupe:String(r[2]||"").trim(),allergies:String(r[3]||"").trim(),texture:String(r[4]||"").trim()||"Régulière",autre:String(r[5]||"").trim()}))
       .filter(x=>x.allergies||x.autre||norm(x.texture)!=="reguliere");
-    const liv=l.filter(r=>r&&r[0]&&r[1]).map(r=>({date:String(r[0]).trim().slice(0,10),garderie:String(r[1]).trim(),total:Math.max(0,parseInt(r[2],10)||0),pou:Math.max(0,parseInt(r[3],10)||0)}));
+    const liv=l.filter(r=>r&&r[0]&&r[1]).map(r=>({date:String(r[0]).trim().slice(0,10),garderie:String(r[1]).trim(),total:Math.max(0,parseInt(r[2],10)||0),pou:Math.max(0,parseInt(r[3],10)||0),livreur:String(r[4]||"").trim().replace(/\s+/g," ")}));
     S.sheet={kids,liv,gard,at:new Date().toISOString()};S.linked=true;S.sync="ok";S.syncCode="";
   }catch(e){S.sync="err";S.syncCode=(e&&e.code)||""}
   local();const a=document.activeElement;if(!S.draft&&!(a&&a.matches("input,textarea,select")))render();
@@ -1590,11 +1591,11 @@ function dayNames(){
 const jourTxt=()=>parse(S.date).toLocaleDateString("fr-CA",{weekday:"long",day:"numeric",month:"long"});
 const gLine=g=>{const h=((S.sheet.gard||{})[g]||{}).heure;return g+(h?" ("+h+")":"")};
 /* message pour un livreur (ou pour tous si drv est vide) : une garderie nommée au-dessus de chaque lien */
-function saveDay(k){const m=S.livd[k]||{};save("envois/"+k,{sent:S.sent[k]||[],liv:Object.keys(m).map(g=>({g,n:m[g]}))})}
+function saveDay(k){save("envois/"+k,{sent:S.sent[k]||[]})}
 function linksText(drv){
   const gs=dayNames().filter(g=>drv===undefined||(LV()[g]||"").trim()===drv);
   return (drv?"Bonjour "+drv+", tes livraisons SC Nutrition du "+jourTxt():"Livraisons SC Nutrition, "+jourTxt())+".\nÀ chaque garderie, touche son lien juste après avoir déposé les bacs :\n\n"+gs.map(g=>gLine(g)+"\n"+gLink(g)).join("\n\n")}
-function oneText(g){return gLine(g)+", "+jourTxt()+".\nTouche ce lien juste après avoir déposé les bacs :\n"+gLink(g)}
+function oneText_unused(g){return gLine(g)+", "+jourTxt()+".\nTouche ce lien juste après avoir déposé les bacs :\n"+gLink(g)}
 /* étiquettes à imprimer : bacs, poupons, portions à part */
 function labels(){
   if(!S.sheet)return null;
@@ -1692,14 +1693,12 @@ function vGard(){
   <div class="card sheet"><div class="t"><b>Étiquettes du jour</b><p class="note" style="margin-top:2px">Une étiquette par bac, une pour les poupons de chaque garderie et une par portion à part, au prénom de l'enfant. Format 4 po × 2 po, 10 par feuille Lettre (compatible Avery 5163), ou papier ordinaire à découper.</p>${S.lmsg?`<p class="${/prêtes/.test(S.lmsg)?"ok":"warn"}" style="margin-top:4px" role="status">${esc(S.lmsg)}</p>`:""}</div><button class="btn main" data-labels>${window.GAS?"Imprimer les étiquettes":"Télécharger les étiquettes"}</button></div>
   ${(()=>{const sent=S.sent["J"+S.date]||[],drvs=[...new Set(names.map(g=>(LV()[g]||"").trim()).filter(Boolean))].sort((x,y)=>x.localeCompare(y,"fr"));
   return `<div class="card" style="margin-bottom:16px;background:#F7FBF2"><b>Liens pour les livreurs</b>
-    <p class="note" style="margin-top:2px">Chaque garderie a son propre lien : il ouvre le formulaire avec le nom de cette garderie déjà rempli. Le code QR de l'étiquette du bac mène au même lien. Si l'imprimante ne fonctionne pas, copiez le message et collez-le dans un texto au livreur : le nom de la garderie est écrit au-dessus de chaque lien.</p>
+    <p class="note" style="margin-top:2px">Chaque garderie a son propre lien : il ouvre le formulaire avec le nom de cette garderie déjà rempli. Le code QR de l'étiquette du bac mène au même lien. Si l'imprimante ne fonctionne pas, copiez le message d'un livreur et collez-le dans un texto : le nom de la garderie est écrit au-dessus de chaque lien.</p>
     <div class="lk">${names.map((g,i)=>`<div class="lkr ${sent.includes(g)?"done":""}"><span class="lkn"><b>${esc(g)}</b>${(G[g]||{}).heure?` <span class="pill y">${esc(G[g].heure)}</span>`:""}</span>
-      <input type="text" data-liv="${i}" value="${esc(LV()[g]||"")}" placeholder="Livreur du jour" list="noms" autocomplete="off" aria-label="Livreur pour ${esc(g)}" maxlength="40">
-      <button class="btn" data-copylink="${i}">Copier son message</button>
+      ${LV()[g]?`<span class="pill">Livreur : ${esc(LV()[g])}</span>`:`<span class="pill o">Livreur à inscrire dans la feuille</span>`}
       <label class="lks"><input type="checkbox" data-sent="${i}" ${sent.includes(g)?"checked":""}> Envoyé</label></div>`).join("")}</div>
-    <datalist id="noms">${S.noms.map(n=>`<option value="${esc(n)}"></option>`).join("")}</datalist>
-    <div class="row" style="margin-top:12px;gap:8px">${drvs.map(d=>`<button class="btn main" data-copydrv="${esc(d)}">Copier ${names.filter(g=>(LV()[g]||"").trim()===d).length>1?"les liens":"le lien"} de ${esc(d)}</button>`).join("")}${names.length>1?`<button class="btn" data-copyall>Copier toutes les garderies</button>`:""}</div>
-    ${drvs.length?"":`<p class="note" style="margin-top:8px">Écrivez à côté de chaque garderie le livreur qui la prend ce jour-là : un bouton par livreur apparaîtra, avec seulement ses garderies, et son nom sera déjà rempli dans le formulaire. L'attribution vaut pour ce jour seulement ; les noms déjà utilisés sont proposés quand vous tapez.</p>`}
+    <div class="row" style="margin-top:12px;gap:8px">${drvs.map(d=>`<button class="btn main" data-copydrv="${esc(d)}">Copier ${names.filter(g=>(LV()[g]||"").trim()===d).length>1?"les liens":"le lien"} de ${esc(d)}</button>`).join("")}${!drvs.length||names.length>1?`<button class="btn" data-copyall>Copier toutes les garderies</button>`:""}</div>
+    <p class="note" style="margin-top:8px">Le livreur de chaque garderie s'écrit dans la colonne Livreur de l'onglet Livraisons de la feuille, sur la ligne du jour. Touchez ensuite Actualiser : un bouton par livreur apparaît ici, avec seulement ses garderies, et son nom est déjà rempli dans le formulaire.</p>
     ${S.cmsg?`<p class="ok" style="margin-top:8px" role="status">${esc(S.cmsg)}</p>`:""}
     ${S.linktxt?`<p class="warn" style="margin-top:8px">La copie automatique ne fonctionne pas ici. Sélectionnez le texte ci-dessous et copiez-le.</p><textarea readonly rows="6" style="width:100%;font:inherit;font-size:14px;margin-top:6px;padding:8px;border-radius:10px;border:1px solid var(--green)">${esc(S.linktxt)}</textarea>`:""}</div>`})()}
   <div class="grid g2">${cards}</div>`;
@@ -1835,8 +1834,7 @@ document.addEventListener("click",async e=>{
   S.cmsg="";S.linktxt="";
   if("copyall" in t.dataset||t.dataset.copylink!==undefined||t.dataset.copydrv!==undefined){
     let txt,msg;
-    if(t.dataset.copylink!==undefined){const g=dayNames()[+t.dataset.copylink];txt=oneText(g);msg="Message de « "+g+" » copié : collez-le dans un texto"+((LV()[g]||"").trim()?" à "+LV()[g].trim():" au livreur")+", puis cochez Envoyé."}
-    else if(t.dataset.copydrv!==undefined){txt=linksText(t.dataset.copydrv);msg="Message de "+t.dataset.copydrv+" copié, avec seulement ses garderies : collez-le dans un texto, puis cochez Envoyé."}
+    if(t.dataset.copydrv!==undefined){txt=linksText(t.dataset.copydrv);msg="Message de "+t.dataset.copydrv+" copié, avec seulement ses garderies : collez-le dans un texto, puis cochez Envoyé."}
     else{txt=linksText();msg="Message copié avec toutes les garderies du jour."}
     try{await navigator.clipboard.writeText(txt);S.cmsg=msg}catch(err){S.linktxt=txt}
     return render()}
@@ -1892,9 +1890,6 @@ document.addEventListener("change",e=>{
     const k="A"+(nowA()+(S.cw||0)),a=new Set(S.checks[k]||[]);
     t.checked?a.add(t.dataset.ck):a.delete(t.dataset.ck);S.checks[k]=[...a];save("courses/"+k,{checked:S.checks[k]});render();
   }
-  if(t.dataset.liv!==undefined){const g=dayNames()[+t.dataset.liv],v=t.value.trim().replace(/\s+/g," "),k="J"+S.date,m=LV();if(v)m[g]=v;else delete m[g];
-    if(v&&!S.noms.some(x=>x.toLowerCase()===v.toLowerCase())){S.noms=[...S.noms,v].sort((x,y)=>x.localeCompare(y,"fr")).slice(0,40);save("config/livreurs",{noms:S.noms})}
-    local();saveDay(k);render()}
   if(t.dataset.sent!==undefined){const g=dayNames()[+t.dataset.sent],k="J"+S.date,a=new Set(S.sent[k]||[]);t.checked?a.add(g):a.delete(g);S.sent[k]=[...a];
     local();saveDay(k);render()}
   if(t.dataset.cfg){S.cfg[t.dataset.cfg]=Math.max(0,parseInt(t.value,10)||0);save("config/menu",S.cfg);render()}
