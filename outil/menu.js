@@ -25,6 +25,7 @@ window.GAS=true;
 
 
 
+
 /* QRCode for JavaScript, Copyright (c) 2009 Kazuhiko Arase, MIT license (http://www.d-project.com/) */
 (function(){var F={"./QR8bitByte":function(require,module){var QRMode = require('./QRMode');
 
@@ -1597,6 +1598,14 @@ function linksText(drv){
   return (drv?"Bonjour "+drv+", tes livraisons SC Nutrition du "+jourTxt():"Livraisons SC Nutrition, "+jourTxt())+".\nÀ chaque garderie, touche son lien juste après avoir déposé les bacs :\n\n"+gs.map(g=>gLine(g)+"\n"+gLink(g)).join("\n\n")}
 function oneText_unused(g){return gLine(g)+", "+jourTxt()+".\nTouche ce lien juste après avoir déposé les bacs :\n"+gLink(g)}
 /* étiquettes à imprimer : bacs, poupons, portions à part */
+/* renseignements d'étiquetage (MAPAQ) : ingrédients en ordre décroissant, allergènes, conservation, lot */
+const UW=[[/oeuf|œuf/i,50],[/clémentine/i,70],[/citron|lime/i,60],[/naan/i,90],[/pita|tortilla|pain|muffin anglais|bagel/i,45],[/tranche/i,30],[/pomme|poire|orange|banane|pêche|mangue/i,150]];
+function ingWeight(x){const q=+x[1]||0,u=x[2];if(!q)return 0;if(u==="g"||u==="ml")return q;const w=UW.find(r=>r[0].test(x[0]));return q*(w?w[1]:100)}
+function ingList(id){return R[id].ing.slice().sort((a,b)=>ingWeight(b)-ingWeight(a)).map(x=>x[0].toLowerCase().replace(/ \(.*\)/,"")).join(", ")}
+const AEXTRA=[[/avoine/i,"Avoine (gluten)"],[/orge/i,"Orge (gluten)"],[/seigle/i,"Seigle (gluten)"],[/soya|soja|tofu|edamame/i,"Soja"],[/moutarde/i,"Moutarde"],[/sésame|tahini|houmous|hummus/i,"Sésame"],[/thon|saumon|poisson|sole|morue|aiglefin/i,"Poisson"],[/crevette|crabe|homard/i,"Crustacés"]];
+function allergens(id){const a=[...(R[id].al||[])];R[id].ing.forEach(x=>AEXTRA.forEach(r=>{if(r[0].test(x[0])&&!a.includes(r[1]))a.push(r[1])}));return a}
+function storage(id,i){if(i===1)return "Garder au chaud, à 60 °C ou plus, jusqu'au service.";
+  return R[id].ing.some(x=>/yogourt|fromage|cheddar|lait|œuf|oeuf|houmous|hummus|thon|poulet|dinde/i.test(x[0]))?"Garder réfrigéré, à 4 °C ou moins, jusqu'au service.":"Conserver au frais jusqu'au service."}
 function labels(){
   if(!S.sheet)return null;
   const A=absWeek(S.date),j=dayOf(S.date);if(j>4)return null;
@@ -1607,7 +1616,10 @@ function labels(){
   const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/ : part prélevée[^.]*\. Fruit du dessert écrasé/g,", fruit du dessert écrasé").replace(/\s+/g," ").trim()};
   const date=parse(S.date).toLocaleDateString("fr-CA",{weekday:"long",day:"numeric",month:"long"});
   const top=(g,kind,cls)=>`<div class="top"><span class="g">${esc(g)}</span><span class="k ${cls}">${kind}</span></div>`;
-  const foot=`<div class="ft"><span>SC Nutrition</span><span>${esc(date)}</span></div>`;
+  const adr=(S.cfg.adresse||"").trim(),lot=S.date.slice(2).replace(/-/g,"");
+  const who="SC Nutrition"+(adr?", "+adr:", Montréal (Québec)")+" · (438) 379-1995";
+  const foot=`<div class="ft"><span>Préparé par ${esc(who)}</span><span>Préparé le ${esc(S.date)} · Lot ${lot}</span></div>`;
+  const KIND=["COLLATION DU MATIN","DÎNER","COLLATION D'APRÈS-MIDI"];
   const out=[];
   names.forEach(g=>{
     const m=merged[g],plans=S.sheet.kids.filter(k=>k.garderie===g).map(k=>({k,...kidPlan(k,ids,weekIds)}));
@@ -1618,13 +1630,20 @@ function labels(){
       <div class="cnt"><span><b>${reg}</b> normal</span><span><b>${pouN}</b> poupon${pouN>1?"s":""}</span><span><b>${spec.length}</b> à part</span></div>
       <div class="ln">${ids.map((id,i)=>`<div><b>${LAB[i]} :</b> ${esc(R[id].n)}</div>`).join("")}</div>
       <div class="tp">Chaud : 60 °C ou plus · Froid : 4 °C ou moins</div></div>${qr?`<div class="qr">${qr}<span>Livreur : scanne ici</span></div>`:""}</div>${foot}</div>`);
+    if(reg)ids.forEach((id,i)=>{const al=allergens(id);
+      out.push(`<div class="lb">${top(g,KIND[i],"v")}<div class="nm">${esc(R[id].n)}</div>
+      <div class="ln"><b>Ingrédients :</b> ${esc(ingList(id))}.${al.length?` <b>Contient : ${esc(al.join(", "))}.</b>`:""}</div>
+      <div class="inf"><b>${reg} portion${reg>1?"s":""}</b> · Prêt à servir · À consommer le jour même. ${storage(id,i)}</div>${foot}</div>`)});
+    const alDay=[...new Set(ids.flatMap(allergens))];
     if(pouN){const pn=plans.filter(x=>x.plain).map(x=>x.k.prenom).join(", ");
       out.push(`<div class="lb">${top(g,"POUPONS","o")}<div class="big">${pouN} portion${pouN>1?"s":""} en purée</div>${pn?`<div class="sub">${esc(pn)}</div>`:""}
-      <div class="ln">${ids.map((id,i)=>`<div><b>${LAB[i]} :</b> ${esc(plain(esc(pp(id))))}</div>`).join("")}</div>${foot}</div>`)}
+      <div class="ln">${ids.map((id,i)=>`<div><b>${LAB[i]} :</b> ${esc(plain(esc(pp(id))))}</div>`).join("")}${alDay.length?`<div><b>Contient : ${esc(alDay.join(", "))}.</b></div>`:""}</div>
+      <div class="inf">À consommer le jour même. Purée chaude à 60 °C ou plus ; collations réfrigérées à 4 °C ou moins.</div>${foot}</div>`)}
     spec.forEach(x=>{const k=x.k;
       out.push(`<div class="lb">${top(g,"PORTION À PART","r")}<div class="big">${esc(k.prenom)}${k.groupe?` <small>${esc(k.groupe)}</small>`:""}</div>
       ${k.allergies?`<div class="al">ALLERGIE : ${esc(k.allergies)}</div>`:""}${k.autre||norm(k.texture)!=="reguliere"?`<div class="sub">${esc([k.autre,norm(k.texture)!=="reguliere"?"Texture : "+k.texture:""].filter(Boolean).join(" · "))}</div>`:""}
-      <div class="ln">${x.lines.map(l=>`<div>${esc(plain(l))}</div>`).join("")}</div>${foot}</div>`)});
+      <div class="ln">${x.lines.map(l=>`<div>${esc(plain(l))}</div>`).join("")}</div>
+      <div class="inf">À consommer le jour même. Chaud à 60 °C ou plus ; froid à 4 °C ou moins.</div>${foot}</div>`)});
   });
   const css=`@page{size:Letter;margin:0.5in 0.156in}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#111;background:#eee}
@@ -1645,7 +1664,9 @@ function labels(){
 .tp{font-size:7.5pt}
 .bq{display:flex;gap:8px;flex:1;min-height:0}.bx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .qr{flex:0 0 1.08in;text-align:center;font-size:6.5pt;font-weight:700;line-height:1.1}.qr svg{width:1.08in;height:1.08in;display:block}
-.ft{display:flex;justify-content:space-between;font-size:7pt;color:#444;border-top:1px solid #999;padding-top:1px}
+.ft{display:flex;justify-content:space-between;flex-wrap:wrap;column-gap:8px;font-size:6pt;line-height:1.15;color:#333;border-top:1px solid #999;padding-top:1px}
+.nm{font-size:11.5pt;font-weight:700;line-height:1.1}
+.inf{font-size:6.8pt;line-height:1.15}
 @media print{body{background:#fff}.bar{display:none}.sheet{margin:0;width:auto}.lb{border-color:transparent}
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 `,body=out.join(""),info=`${out.length} étiquettes · ${esc(date)}. Papier Lettre, échelle 100 % (« taille réelle »), sans en-têtes ni pieds de page. Feuilles d'étiquettes 4 po × 2 po (Avery 5163) ou papier ordinaire à découper.`;
@@ -1690,7 +1711,9 @@ function vGard(){
     </section>`}).join("");
   const tot=names.reduce((n,g)=>n+merged[g].tot,0);
   return head+sheetBar()+`<p class="note" style="margin:0 0 12px">${names.length} garderie${names.length>1?"s":""}, ${tot} enfants. Vous cuisinez une seule fois pour tout le monde (onglet Aujourd'hui), puis vous remplissez un bac par garderie avec les nombres ci-dessous.</p>
-  <div class="card sheet"><div class="t"><b>Étiquettes du jour</b><p class="note" style="margin-top:2px">Une étiquette par bac, une pour les poupons de chaque garderie et une par portion à part, au prénom de l'enfant. Format 4 po × 2 po, 10 par feuille Lettre (compatible Avery 5163), ou papier ordinaire à découper.</p>${S.lmsg?`<p class="${/prêtes/.test(S.lmsg)?"ok":"warn"}" style="margin-top:4px" role="status">${esc(S.lmsg)}</p>`:""}</div><button class="btn main" data-labels>${window.GAS?"Imprimer les étiquettes":"Télécharger les étiquettes"}</button></div>
+  <div class="card sheet"><div class="t"><b>Étiquettes du jour</b><p class="note" style="margin-top:2px">Par garderie : une étiquette de bac, une étiquette de produit pour chaque collation et pour le dîner (ingrédients en ordre décroissant, allergènes, portions, conservation, date et lot), une pour les poupons et une par portion à part, au prénom de l'enfant. Format 4 po × 2 po, 10 par feuille Lettre (compatible Avery 5163).</p>
+    <label style="display:block;margin-top:8px;font-weight:600;font-size:14px">Adresse de la cuisine de production (imprimée sur chaque étiquette)<input type="text" data-cfgtxt="adresse" value="${esc(S.cfg.adresse||"")}" placeholder="Ex. : 1234, rue Jarry Est, Montréal (Québec) H1P 1A1" maxlength="90" style="display:block;width:100%;height:40px;margin-top:4px;border:1.5px solid var(--green);border-radius:999px;padding:0 14px;font:inherit;font-size:15px;font-weight:400;background:#fff;color:inherit"></label>
+    ${(S.cfg.adresse||"").trim()?"":`<p class="warn" style="margin-top:4px">Adresse manquante : l'étiquette doit indiquer le nom et l'adresse du préparateur.</p>`}${S.lmsg?`<p class="${/prêtes/.test(S.lmsg)?"ok":"warn"}" style="margin-top:4px" role="status">${esc(S.lmsg)}</p>`:""}</div><button class="btn main" data-labels>${window.GAS?"Imprimer les étiquettes":"Télécharger les étiquettes"}</button></div>
   ${(()=>{const sent=S.sent["J"+S.date]||[],drvs=[...new Set(names.map(g=>(LV()[g]||"").trim()).filter(Boolean))].sort((x,y)=>x.localeCompare(y,"fr"));
   return `<div class="card" style="margin-bottom:16px;background:#F7FBF2"><b>Liens pour les livreurs</b>
     <p class="note" style="margin-top:2px">Chaque garderie a son propre lien : il ouvre le formulaire avec le nom de cette garderie déjà rempli. Le code QR de l'étiquette du bac mène au même lien. Si l'imprimante ne fonctionne pas, copiez le message d'un livreur et collez-le dans un texto : le nom de la garderie est écrit au-dessus de chaque lien.</p>
@@ -1892,6 +1915,7 @@ document.addEventListener("change",e=>{
   }
   if(t.dataset.sent!==undefined){const g=dayNames()[+t.dataset.sent],k="J"+S.date,a=new Set(S.sent[k]||[]);t.checked?a.add(g):a.delete(g);S.sent[k]=[...a];
     local();saveDay(k);render()}
+  if(t.dataset.cfgtxt){S.cfg[t.dataset.cfgtxt]=t.value.trim().replace(/\s+/g," ").slice(0,90);local();save("config/menu",S.cfg);render()}
   if(t.dataset.cfg){S.cfg[t.dataset.cfg]=Math.max(0,parseInt(t.value,10)||0);save("config/menu",S.cfg);render()}
   if(t.id==="debut"&&t.value){S.cfg.debut=iso(monday(parse(t.value)));S.wk=null;save("config/menu",S.cfg);render()}
 });
@@ -1920,7 +1944,7 @@ if(S.linked||window.GAS)sync();
   try{const user=await claude.use("user");if(user){const c=await user.can("data.write");if(c===false){S.canWrite=false;setStatus("Lecture seule")}}}catch(e){}
   const timer=setTimeout(()=>setStatus("Données pas encore accessibles, réessayez dans un moment"),10000);
   db.doc("config/menu").onSnapshot(s=>{clearTimeout(timer);
-    if(s.exists){Object.assign(S.cfg,s.data());local();syncInputs();if(!document.activeElement||!document.activeElement.matches("input[type=number],input[type=search]"))render()}
+    if(s.exists){Object.assign(S.cfg,s.data());local();syncInputs();if(!document.activeElement||!document.activeElement.matches("input[type=number],input[type=search],input[type=text],textarea"))render()}
     if(S.canWrite)setStatus("À jour")},()=>{clearTimeout(timer);setStatus("Connexion perdue : rechargez la page")});
   db.collection("recettes").onSnapshot(s=>{S.custom={};s.docs.forEach(d=>{S.custom[d.id]=d.data()});applyCustom();local();if(!S.draft&&S.view!=="jour")render()},()=>{});
   db.collection("cycles").onSnapshot(s=>{s.docs.forEach(d=>{const x=d.data().slots;if(Array.isArray(x)&&x.length===60)S.cycles[d.id]=x.map(String)});
