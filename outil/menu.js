@@ -1,4 +1,4 @@
-/* Menu SC Nutrition, version Google Sheets. Fichier généré : ne pas modifier à la main. */
+/* SCN Cuisine, version Google Sheets. Fichier généré : ne pas modifier à la main. */
 window.GAS=true;
 (function(){
   var run=function(fn){var a=[].slice.call(arguments,1);return new Promise(function(res,rej){var r=google.script.run.withSuccessHandler(res).withFailureHandler(rej);r[fn].apply(r,a)})};
@@ -15,9 +15,10 @@ window.GAS=true;
   var mcp={callTool:function(server,tool,input){return run("getTab",String(input.range).split("!")[0]).then(function(j){return{payload:{values:JSON.parse(j)}}})}};
   var caps={db:db,mcp:mcp,user:{can:function(){return Promise.resolve(true)}}};
   window.claude={use:function(n){return Promise.resolve(caps[n]||null)}};
-  document.title="Menu SC Nutrition";
-  var app=document.getElementById("app");if(app)app.outerHTML="<header>\n  <div class=\"wrap\">\n    <div class=\"top\">\n      <div class=\"brand\"><span class=\"s\">S</span><span class=\"c\">C</span><span class=\"n\">Nutrition</span><small>le menu</small></div>\n      <div class=\"count\">\n        <span class=\"hc\" id=\"hcount\"></span>\n        <label>Marge % <input id=\"nMar\" type=\"number\" min=\"0\" max=\"30\" inputmode=\"numeric\"></label>\n      </div>\n    </div>\n    <nav role=\"tablist\" aria-label=\"Sections\">\n      <button class=\"tab\" role=\"tab\" data-v=\"jour\">Aujourd'hui</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"gard\">Par garderie</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"menu\">Menu 4 semaines</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"recettes\">Recettes</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"courses\">Courses</button>\n    </nav>\n    <div id=\"status\" aria-live=\"polite\"></div>\n  </div>\n</header>\n<main class=\"wrap\" id=\"view\"></main>";
+  document.title="SCN Cuisine";
+  var app=document.getElementById("app");if(app)app.outerHTML="<header>\n  <div class=\"wrap\">\n    <div class=\"top\">\n      <div class=\"brand\"><span class=\"s\">S</span><span class=\"c\">C</span><span class=\"n\">Nutrition</span><small>cuisine</small></div>\n      <div class=\"count\">\n        <span class=\"hc\" id=\"hcount\"></span>\n        <label>Marge % <input id=\"nMar\" type=\"number\" min=\"0\" max=\"30\" inputmode=\"numeric\"></label>\n      </div>\n    </div>\n    <nav role=\"tablist\" aria-label=\"Sections\">\n      <button class=\"tab\" role=\"tab\" data-v=\"jour\">Aujourd'hui</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"gard\">Par garderie</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"menu\">Menu 4 semaines</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"recettes\">Recettes</button>\n      <button class=\"tab\" role=\"tab\" data-v=\"courses\">Courses</button>\n    </nav>\n    <div id=\"status\" aria-live=\"polite\"></div>\n  </div>\n</header>\n<main class=\"wrap\" id=\"view\"></main>";
 })();
+
 
 
 
@@ -1496,15 +1497,15 @@ async function sync(){
 }
 function sheetBar(){
   const btn=l=>`<button class="btn" data-sync ${S.sync==="load"?"disabled":""}>${S.sync==="load"?"Lecture en cours…":l}</button>`;
-  if(S.sync==="none")return `<div class="card sheet"><div class="t"><b>Feuille Cuisine du jour</b><p class="note" style="margin-top:2px">La liaison avec Google Sheets n'est pas disponible dans cette vue. Ouvrez l'outil depuis Claude, connecté à votre compte.</p></div></div>`;
+  if(S.sync==="none")return `<div class="card sheet"><div class="t"><b>Feuille SCN gestion</b><p class="note" style="margin-top:2px">La liaison avec Google Sheets n'est pas disponible dans cette vue. Ouvrez l'outil depuis Claude, connecté à votre compte.</p></div></div>`;
   if(S.sync==="err"){
     const m={needs_reauth:"Google Sheets doit être reconnecté : dans Claude, ouvrez Paramètres, puis Connecteurs.",server_not_connected:"Google Sheets n'est pas connecté à ce compte Claude : ajoutez-le dans Paramètres, puis Connecteurs.",not_in_manifest:"Vous n'avez pas autorisé cette page à lire Google Sheets.",approval_required:"L'accès à Google Sheets demande votre accord. Réessayez et acceptez la demande.",blocked_by_policy:"L'accès à Google Sheets est bloqué pour ce compte."}[S.syncCode]||"La feuille n'a pas répondu. Réessayez dans un instant.";
-    return `<div class="card sheet"><div class="t"><b>Feuille Cuisine du jour</b><p class="warn" style="margin-top:2px">${m}</p>${S.sheet?`<p class="note" style="margin-top:2px">Affichage des dernières données lues.</p>`:""}</div>${btn("Réessayer")}</div>`;
+    return `<div class="card sheet"><div class="t"><b>Feuille SCN gestion</b><p class="warn" style="margin-top:2px">${m}</p>${S.sheet?`<p class="note" style="margin-top:2px">Affichage des dernières données lues.</p>`:""}</div>${btn("Réessayer")}</div>`;
   }
-  if(!S.sheet)return `<div class="card sheet"><div class="t"><b>Relier à votre feuille Cuisine du jour</b><p class="note" style="margin-top:2px">Pour afficher ici les enfants allergiques, les poupons et le nombre d'enfants du jour, lus dans votre feuille Google.</p></div>${btn("Relier ma feuille Google")}</div>`;
+  if(!S.sheet)return `<div class="card sheet"><div class="t"><b>Relier à votre feuille SCN gestion</b><p class="note" style="margin-top:2px">Pour afficher ici les enfants allergiques, les poupons et le nombre d'enfants du jour, lus dans votre feuille Google.</p></div>${btn("Relier ma feuille Google")}</div>`;
   const liv=S.sheet.liv.filter(x=>x.date===S.date),tot=liv.reduce((n,x)=>n+x.total,0),pou=liv.reduce((n,x)=>n+x.pou,0);
   const at=new Date(S.sheet.at).toLocaleTimeString("fr-CA",{hour:"2-digit",minute:"2-digit"});
-  return `<div class="card sheet"><div class="t"><b>Feuille Cuisine du jour</b>
+  return `<div class="card sheet"><div class="t"><b>Feuille SCN gestion</b>
     <p style="margin-top:2px">${liv.length?`${liv.length} garderie${liv.length>1?"s":""} à livrer : <b>${tot} enfants</b>, dont <b>${pou} poupon${pou>1?"s":""}</b>.`:`Aucune livraison saisie pour ce jour dans la feuille. Les quantités sont calculées pour votre nombre habituel (${+S.cfg.enfants||0} enfants, ${+S.cfg.poupons||0} poupon${+S.cfg.poupons>1?"s":""}), à régler dans l'onglet Courses.`}</p>
     ${liv.length?`<p class="note" style="margin-top:2px">Les quantités à préparer suivent ce nombre. Pour le changer, modifiez l'onglet Livraisons de la feuille, puis touchez Actualiser.</p>`:""}
     <p class="note" style="margin-top:2px">Lu à ${at}.</p></div>
